@@ -48,7 +48,7 @@ func decodeRIFFChunk(r RIFFReader) (chunk *RIFFChunk, err error) {
 
 	chunk = &RIFFChunk{fileSize, fileType, make([]*Chunk, 0)}
 
-	for !bytes.eof() {
+	for bytes.Offset < fileSize {
 		chunkId = bytes.readBytes(4)
 		chunkSize := bytes.readLEUint32()
 		offset := bytes.Offset
