@@ -83,5 +83,5 @@ func (bytes *Bytes) readBytes(size uint32) []byte {
 		bytes.Offset += size
 	}()
 
-	return data[0:size]
+	return data
 }
