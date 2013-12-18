@@ -5,6 +5,11 @@ import (
 	"io"
 )
 
+type RIFFReader interface {
+	io.Reader
+	io.ReaderAt
+}
+
 type RIFFChunk struct {
 	FileSize uint32
 	FileType []byte
@@ -14,16 +19,16 @@ type RIFFChunk struct {
 type Chunk struct {
 	ChunkID   []byte
 	ChunkSize uint32
-	Data      []byte
+	Reader    *io.SectionReader
 }
 
-func Decode(r io.Reader) (chunk *RIFFChunk, err error) {
+func Decode(r RIFFReader) (chunk *RIFFChunk, err error) {
 	chunk, err = decodeRIFFChunk(r)
 
 	return
 }
 
-func decodeRIFFChunk(r io.Reader) (chunk *RIFFChunk, err error) {
+func decodeRIFFChunk(r RIFFReader) (chunk *RIFFChunk, err error) {
 	bytes, err := newBytes(r)
 
 	if err != nil {
@@ -46,14 +51,20 @@ func decodeRIFFChunk(r io.Reader) (chunk *RIFFChunk, err error) {
 	for !bytes.eof() {
 		chunkId = bytes.readBytes(4)
 		chunkSize := bytes.readLEUint32()
+		offset := bytes.Offset
 
 		if chunkSize%2 == 1 {
 			chunkSize += 1
 		}
 
-		data := bytes.readBytes(chunkSize)
+		bytes.Offset += chunkSize
 
-		chunk.Chunks = append(chunk.Chunks, &Chunk{chunkId, chunkSize, data})
+		chunk.Chunks = append(
+			chunk.Chunks,
+			&Chunk{
+				chunkId,
+				chunkSize,
+				io.NewSectionReader(r, int64(offset), int64(chunkSize))})
 	}
 
 	return

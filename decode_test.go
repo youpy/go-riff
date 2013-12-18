@@ -1,6 +1,7 @@
 package riff
 
 import (
+	"io/ioutil"
 	"testing"
 )
 
@@ -38,7 +39,7 @@ func TestDecodeRIFF(t *testing.T) {
 		}
 
 		for _, chunk := range riff.Chunks {
-			t.Log(string(chunk.ChunkID[:]))
+			t.Logf("Chunk ID: %s", string(chunk.ChunkID[:]))
 		}
 
 		if len(riff.Chunks) != testFile.ChunkSize {
@@ -52,6 +53,14 @@ func TestDecodeRIFF(t *testing.T) {
 		if string(riff.FileType[:]) != testFile.FileType {
 			t.Fatalf("File type is invalid: %s", riff.FileType)
 		}
+
+		data, err := ioutil.ReadAll(riff.Chunks[0].Reader)
+
+		if err != nil {
+			t.Fatalf("Can't read data from chunk")
+		}
+
+		t.Logf("Length of the first chunk: %d", len(data))
 	}
 }
 
