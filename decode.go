@@ -29,7 +29,7 @@ func Decode(r RIFFReader) (chunk *RIFFChunk, err error) {
 }
 
 func decodeRIFFChunk(r RIFFReader) (chunk *RIFFChunk, err error) {
-	bytes, err := newBytes(r)
+	bytes := newBytes(r)
 
 	if err != nil {
 		err = errors.New("Can't read RIFF file")

@@ -9,7 +9,7 @@ type Bytes struct {
 	Reader io.ReaderAt
 }
 
-func newBytes(r io.ReaderAt) (bytes *Bytes, err error) {
+func newBytes(r io.ReaderAt) (bytes *Bytes) {
 	bytes = &Bytes{0, r}
 
 	return
