@@ -29,7 +29,7 @@ func Decode(r RIFFReader) (chunk *RIFFChunk, err error) {
 }
 
 func decodeRIFFChunk(r RIFFReader) (chunk *RIFFChunk, err error) {
-	bytes := newBytes(r)
+	bytes := newByteReader(r)
 
 	if err != nil {
 		err = errors.New("Can't read RIFF file")
@@ -48,16 +48,16 @@ func decodeRIFFChunk(r RIFFReader) (chunk *RIFFChunk, err error) {
 
 	chunk = &RIFFChunk{fileSize, fileType, make([]*Chunk, 0)}
 
-	for bytes.Offset < fileSize {
+	for bytes.offset < fileSize {
 		chunkId = bytes.readBytes(4)
 		chunkSize := bytes.readLEUint32()
-		offset := bytes.Offset
+		offset := bytes.offset
 
 		if chunkSize%2 == 1 {
 			chunkSize += 1
 		}
 
-		bytes.Offset += chunkSize
+		bytes.offset += chunkSize
 
 		chunk.Chunks = append(
 			chunk.Chunks,

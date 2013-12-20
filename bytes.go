@@ -4,19 +4,19 @@ import (
 	"io"
 )
 
-type Bytes struct {
-	Offset uint32
+type byteReader struct {
+	offset uint32
 	io.ReaderAt
 }
 
-func newBytes(r io.ReaderAt) (bytes *Bytes) {
-	bytes = &Bytes{0, r}
+func newByteReader(r io.ReaderAt) (bytes *byteReader) {
+	bytes = &byteReader{0, r}
 
 	return
 }
 
-func (bytes *Bytes) readLEUint32() uint32 {
-	offset := bytes.Offset
+func (bytes *byteReader) readLEUint32() uint32 {
+	offset := bytes.offset
 	data := make([]byte, 4)
 
 	n, err := bytes.ReadAt(data, int64(offset))
@@ -26,7 +26,7 @@ func (bytes *Bytes) readLEUint32() uint32 {
 	}
 
 	defer func() {
-		bytes.Offset += 4
+		bytes.offset += 4
 	}()
 
 	return uint32(data[3])<<24 +
@@ -35,8 +35,8 @@ func (bytes *Bytes) readLEUint32() uint32 {
 		uint32(data[0])
 }
 
-func (bytes *Bytes) readLEUint16() uint16 {
-	offset := bytes.Offset
+func (bytes *byteReader) readLEUint16() uint16 {
+	offset := bytes.offset
 	data := make([]byte, 2)
 
 	n, err := bytes.ReadAt(data, int64(offset))
@@ -46,14 +46,14 @@ func (bytes *Bytes) readLEUint16() uint16 {
 	}
 
 	defer func() {
-		bytes.Offset += 2
+		bytes.offset += 2
 	}()
 
 	return uint16(data[1])<<8 + uint16(data[0])
 }
 
-func (bytes *Bytes) readLEInt16() int16 {
-	offset := bytes.Offset
+func (bytes *byteReader) readLEInt16() int16 {
+	offset := bytes.offset
 	data := make([]byte, 2)
 
 	n, err := bytes.ReadAt(data, int64(offset))
@@ -63,14 +63,14 @@ func (bytes *Bytes) readLEInt16() int16 {
 	}
 
 	defer func() {
-		bytes.Offset += 2
+		bytes.offset += 2
 	}()
 
 	return int16(data[offset+1])<<8 + int16(data[offset])
 }
 
-func (bytes *Bytes) readBytes(size uint32) []byte {
-	offset := bytes.Offset
+func (bytes *byteReader) readBytes(size uint32) []byte {
+	offset := bytes.offset
 	data := make([]byte, size)
 
 	n, err := bytes.ReadAt(data, int64(offset))
@@ -80,7 +80,7 @@ func (bytes *Bytes) readBytes(size uint32) []byte {
 	}
 
 	defer func() {
-		bytes.Offset += size
+		bytes.offset += size
 	}()
 
 	return data
