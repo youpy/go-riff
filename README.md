@@ -1,3 +1,3 @@
 # go-riff
 
-A Go library to read RIFF format
+A Go library to read/write RIFF format

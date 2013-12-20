@@ -6,6 +6,13 @@ import (
 	"runtime"
 )
 
+type TestFile struct {
+	Name      string
+	ChunkSize int
+	FileSize  uint32
+	FileType  string
+}
+
 func fixture(basename string) string {
 	_, filename, _, _ := runtime.Caller(1)
 

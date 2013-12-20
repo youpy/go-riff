@@ -1,11 +1,13 @@
 package riff
 
 import (
+	"io"
 	"io/ioutil"
+	"os"
 	"testing"
 )
 
-func TestDecodeRIFF(t *testing.T) {
+func TestEncodeRIFF(t *testing.T) {
 	testFiles := []TestFile{
 		TestFile{
 			"a.wav",
@@ -31,8 +33,38 @@ func TestDecodeRIFF(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		outfile, err := ioutil.TempFile("/tmp", "outfile")
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		defer func() {
+			outfile.Close()
+			os.Remove(outfile.Name())
+		}()
+
+		encoder := NewEncoder(outfile, riff.FileType, riff.FileSize)
+
 		for _, chunk := range riff.Chunks {
-			t.Logf("Chunk ID: %s", string(chunk.ChunkID[:]))
+			encoder.WriteChunk(chunk.ChunkID, chunk.ChunkSize, func(w io.Writer) {
+				buf, err := ioutil.ReadAll(chunk)
+
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				w.Write(buf)
+			})
+		}
+
+		outfile.Close()
+
+		// reopen to check file content
+		file, err = os.Open(outfile.Name())
+
+		if err != nil {
+			t.Fatal(err)
 		}
 
 		if len(riff.Chunks) != testFile.ChunkSize {
@@ -46,29 +78,5 @@ func TestDecodeRIFF(t *testing.T) {
 		if string(riff.FileType[:]) != testFile.FileType {
 			t.Fatalf("File type is invalid: %s", riff.FileType)
 		}
-
-		data, err := ioutil.ReadAll(riff.Chunks[0])
-
-		if err != nil {
-			t.Fatalf("Can't read data from chunk")
-		}
-
-		t.Logf("Length of the first chunk: %d", len(data))
-
-		file.Close()
-	}
-}
-
-func TestDecodeNonRIFF(t *testing.T) {
-	file, err := fixtureFile("../decode.go")
-
-	if err != nil {
-		t.Fatalf("Failed to open fixture file")
-	}
-
-	_, err = Decode(file)
-
-	if err.Error() != "Given bytes is not a RIFF format" {
-		t.Fatal("Non-RIFF file should not be decoded")
 	}
 }
