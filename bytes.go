@@ -6,7 +6,7 @@ import (
 
 type Bytes struct {
 	Offset uint32
-	Reader io.ReaderAt
+	io.ReaderAt
 }
 
 func newBytes(r io.ReaderAt) (bytes *Bytes) {
@@ -19,7 +19,7 @@ func (bytes *Bytes) readLEUint32() uint32 {
 	offset := bytes.Offset
 	data := make([]byte, 4)
 
-	n, err := bytes.Reader.ReadAt(data, int64(offset))
+	n, err := bytes.ReadAt(data, int64(offset))
 
 	if err != nil || n < 4 {
 		panic("Can't read bytes")
@@ -39,7 +39,7 @@ func (bytes *Bytes) readLEUint16() uint16 {
 	offset := bytes.Offset
 	data := make([]byte, 2)
 
-	n, err := bytes.Reader.ReadAt(data, int64(offset))
+	n, err := bytes.ReadAt(data, int64(offset))
 
 	if err != nil || n < 2 {
 		panic("Can't read bytes")
@@ -56,7 +56,7 @@ func (bytes *Bytes) readLEInt16() int16 {
 	offset := bytes.Offset
 	data := make([]byte, 2)
 
-	n, err := bytes.Reader.ReadAt(data, int64(offset))
+	n, err := bytes.ReadAt(data, int64(offset))
 
 	if err != nil || n < 2 {
 		panic("Can't read bytes")
@@ -73,7 +73,7 @@ func (bytes *Bytes) readBytes(size uint32) []byte {
 	offset := bytes.Offset
 	data := make([]byte, size)
 
-	n, err := bytes.Reader.ReadAt(data, int64(offset))
+	n, err := bytes.ReadAt(data, int64(offset))
 
 	if err != nil || n < int(size) {
 		panic("Can't read bytes")

@@ -19,7 +19,7 @@ type RIFFChunk struct {
 type Chunk struct {
 	ChunkID   []byte
 	ChunkSize uint32
-	Reader    *io.SectionReader
+	RIFFReader
 }
 
 func Decode(r RIFFReader) (chunk *RIFFChunk, err error) {

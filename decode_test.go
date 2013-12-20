@@ -54,7 +54,7 @@ func TestDecodeRIFF(t *testing.T) {
 			t.Fatalf("File type is invalid: %s", riff.FileType)
 		}
 
-		data, err := ioutil.ReadAll(riff.Chunks[0].Reader)
+		data, err := ioutil.ReadAll(riff.Chunks[0])
 
 		if err != nil {
 			t.Fatalf("Can't read data from chunk")
