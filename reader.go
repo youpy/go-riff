@@ -10,6 +10,10 @@ type RIFFReader interface {
 	io.ReaderAt
 }
 
+type Reader struct {
+	RIFFReader
+}
+
 type RIFFChunk struct {
 	FileSize uint32
 	FileType []byte
@@ -22,13 +26,17 @@ type Chunk struct {
 	RIFFReader
 }
 
-func Decode(r RIFFReader) (chunk *RIFFChunk, err error) {
-	chunk, err = decodeRIFFChunk(r)
+func NewReader(r RIFFReader) *Reader {
+	return &Reader{r}
+}
+
+func (r *Reader) Read() (chunk *RIFFChunk, err error) {
+	chunk, err = readRIFFChunk(r)
 
 	return
 }
 
-func decodeRIFFChunk(r RIFFReader) (chunk *RIFFChunk, err error) {
+func readRIFFChunk(r *Reader) (chunk *RIFFChunk, err error) {
 	bytes := newByteReader(r)
 
 	if err != nil {

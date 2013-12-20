@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestDecodeRIFF(t *testing.T) {
+func TestReadRIFF(t *testing.T) {
 	testFiles := []testFile{
 		testFile{
 			"a.wav",
@@ -25,7 +25,8 @@ func TestDecodeRIFF(t *testing.T) {
 			t.Fatalf("Failed to open fixture file")
 		}
 
-		riff, err := Decode(file)
+		reader := NewReader(file)
+		riff, err := reader.Read()
 
 		if err != nil {
 			t.Fatal(err)
@@ -59,16 +60,17 @@ func TestDecodeRIFF(t *testing.T) {
 	}
 }
 
-func TestDecodeNonRIFF(t *testing.T) {
-	file, err := fixtureFile("../decode.go")
+func TestReadNonRIFF(t *testing.T) {
+	file, err := fixtureFile("../reader.go")
 
 	if err != nil {
 		t.Fatalf("Failed to open fixture file")
 	}
 
-	_, err = Decode(file)
+	reader := NewReader(file)
+	_, err = reader.Read()
 
 	if err.Error() != "Given bytes is not a RIFF format" {
-		t.Fatal("Non-RIFF file should not be decoded")
+		t.Fatal("Non-RIFF file should not be read")
 	}
 }

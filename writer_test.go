@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestEncodeRIFF(t *testing.T) {
+func TestWriteRIFF(t *testing.T) {
 	testFiles := []testFile{
 		testFile{
 			"a.wav",
@@ -27,7 +27,8 @@ func TestEncodeRIFF(t *testing.T) {
 			t.Fatalf("Failed to open fixture file")
 		}
 
-		riff, err := Decode(file)
+		reader := NewReader(file)
+		riff, err := reader.Read()
 
 		if err != nil {
 			t.Fatal(err)
@@ -44,10 +45,10 @@ func TestEncodeRIFF(t *testing.T) {
 			os.Remove(outfile.Name())
 		}()
 
-		encoder := NewEncoder(outfile, riff.FileType, riff.FileSize)
+		writer := NewWriter(outfile, riff.FileType, riff.FileSize)
 
 		for _, chunk := range riff.Chunks {
-			encoder.WriteChunk(chunk.ChunkID, chunk.ChunkSize, func(w io.Writer) {
+			writer.WriteChunk(chunk.ChunkID, chunk.ChunkSize, func(w io.Writer) {
 				buf, err := ioutil.ReadAll(chunk)
 
 				if err != nil {
@@ -67,7 +68,8 @@ func TestEncodeRIFF(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		riff, err = Decode(file)
+		reader = NewReader(file)
+		riff, err = reader.Read()
 
 		if err != nil {
 			t.Fatal(err)
