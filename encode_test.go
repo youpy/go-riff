@@ -67,6 +67,16 @@ func TestEncodeRIFF(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		riff, err = Decode(file)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for _, chunk := range riff.Chunks {
+			t.Logf("Chunk ID: %s", string(chunk.ChunkID[:]))
+		}
+
 		if len(riff.Chunks) != testFile.ChunkSize {
 			t.Fatalf("Invalid length of chunks")
 		}
