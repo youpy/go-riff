@@ -6,7 +6,7 @@ import (
 	"runtime"
 )
 
-type TestFile struct {
+type testFile struct {
 	Name      string
 	ChunkSize int
 	FileSize  uint32

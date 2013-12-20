@@ -8,13 +8,13 @@ import (
 )
 
 func TestEncodeRIFF(t *testing.T) {
-	testFiles := []TestFile{
-		TestFile{
+	testFiles := []testFile{
+		testFile{
 			"a.wav",
 			3,
 			243800,
 			"WAVE"},
-		TestFile{
+		testFile{
 			"1_webp_a.webp",
 			3,
 			23396,
