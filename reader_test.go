@@ -1,9 +1,64 @@
 package riff
 
 import (
+	"bytes"
+	"encoding/binary"
 	"io/ioutil"
 	"testing"
 )
+
+func TestReadRIFFChunkBoundary(t *testing.T) {
+	tests := []struct {
+		name     string
+		payloads []string
+	}{
+		{"no chunks", nil},
+		{"one empty chunk", []string{""}},
+		{"two empty chunks", []string{"", ""}},
+		{"empty chunk after data", []string{"ab", ""}},
+		{"multiple empty chunks after data", []string{"ab", "", ""}},
+		{"nonempty chunk", []string{"ab"}},
+		{"empty chunk before data", []string{"", "ab"}},
+	}
+
+	for _, test := range tests {
+		data := []byte("RIFF\x00\x00\x00\x00WAVE")
+		for _, payload := range test.payloads {
+			header := []byte("data\x00\x00\x00\x00")
+			binary.LittleEndian.PutUint32(header[4:], uint32(len(payload)))
+			data = append(data, header...)
+			data = append(data, []byte(payload)...)
+		}
+		fileSize := uint32(len(data) - 8)
+		binary.LittleEndian.PutUint32(data[4:8], fileSize)
+		// This chunk is outside the RIFF container and must not be read.
+		data = append(data, []byte("JUNK\x00\x00\x00\x00")...)
+
+		riff, err := NewReader(bytes.NewReader(data)).Read()
+		if err != nil {
+			t.Fatalf("%s: Read failed: %v", test.name, err)
+		}
+		if riff.FileSize != fileSize {
+			t.Errorf("%s: FileSize = %d, want %d", test.name, riff.FileSize, fileSize)
+		}
+		if len(riff.Chunks) != len(test.payloads) {
+			t.Errorf("%s: got %d chunks, want %d", test.name, len(riff.Chunks), len(test.payloads))
+			continue
+		}
+		for i, chunk := range riff.Chunks {
+			if string(chunk.ChunkID) != "data" || chunk.ChunkSize != uint32(len(test.payloads[i])) {
+				t.Errorf("%s: chunk %d has ID %q and size %d", test.name, i, chunk.ChunkID, chunk.ChunkSize)
+			}
+			payload, err := ioutil.ReadAll(chunk)
+			if err != nil {
+				t.Fatalf("%s: reading chunk %d failed: %v", test.name, i, err)
+			}
+			if string(payload) != test.payloads[i] {
+				t.Errorf("%s: chunk %d data = %q, want %q", test.name, i, payload, test.payloads[i])
+			}
+		}
+	}
+}
 
 func TestReadRIFF(t *testing.T) {
 	testFiles := []testFile{
