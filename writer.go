@@ -34,5 +34,9 @@ func (w *Writer) WriteChunk(chunkID []byte, chunkSize uint32, cb writeCallback) 
 
 	cb(w)
 
+	if chunkSize%2 == 1 {
+		_, err = w.Write([]byte{0})
+	}
+
 	return
 }

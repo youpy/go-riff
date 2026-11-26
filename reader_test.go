@@ -16,6 +16,7 @@ func TestReadRIFFChunkBoundary(t *testing.T) {
 		{"one empty chunk", []string{""}},
 		{"two empty chunks", []string{"", ""}},
 		{"empty chunk after data", []string{"ab", ""}},
+		{"odd chunk before next chunk", []string{"a", "bc"}},
 		{"multiple empty chunks after data", []string{"ab", "", ""}},
 		{"nonempty chunk", []string{"ab"}},
 		{"empty chunk before data", []string{"", "ab"}},
@@ -28,6 +29,9 @@ func TestReadRIFFChunkBoundary(t *testing.T) {
 			binary.LittleEndian.PutUint32(header[4:], uint32(len(payload)))
 			data = append(data, header...)
 			data = append(data, []byte(payload)...)
+			if len(payload)%2 == 1 {
+				data = append(data, 0)
+			}
 		}
 		fileSize := uint32(len(data) - 8)
 		binary.LittleEndian.PutUint32(data[4:8], fileSize)
