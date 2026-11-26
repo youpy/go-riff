@@ -56,7 +56,8 @@ func readRIFFChunk(r *Reader) (chunk *RIFFChunk, err error) {
 
 	chunk = &RIFFChunk{fileSize, fileType, make([]*Chunk, 0)}
 
-	for bytes.offset < fileSize {
+	// fileSize does not include the eight-byte RIFF chunk header.
+	for uint64(bytes.offset) < uint64(fileSize)+8 {
 		chunkId = bytes.readBytes(4)
 		chunkSize := bytes.readLEUint32()
 		offset := bytes.offset
