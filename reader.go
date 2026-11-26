@@ -39,11 +39,6 @@ func (r *Reader) Read() (chunk *RIFFChunk, err error) {
 func readRIFFChunk(r *Reader) (chunk *RIFFChunk, err error) {
 	bytes := newByteReader(r)
 
-	if err != nil {
-		err = errors.New("Can't read RIFF file")
-		return
-	}
-
 	chunkId := bytes.readBytes(4)
 
 	if string(chunkId[:]) != "RIFF" {
@@ -62,11 +57,8 @@ func readRIFFChunk(r *Reader) (chunk *RIFFChunk, err error) {
 		chunkSize := bytes.readLEUint32()
 		offset := bytes.offset
 
-		if chunkSize%2 == 1 {
-			chunkSize += 1
-		}
-
-		bytes.offset += chunkSize
+		// chunkSize is padded to an even number of bytes by appending a pad byte if necessary.
+		bytes.offset += chunkSize + chunkSize%2
 
 		chunk.Chunks = append(
 			chunk.Chunks,

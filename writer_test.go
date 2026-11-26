@@ -1,11 +1,50 @@
 package riff
 
 import (
+	"bytes"
 	"io"
 	"io/ioutil"
 	"os"
 	"testing"
 )
+
+func TestWriteChunkPadsOddSize(t *testing.T) {
+	var output bytes.Buffer
+	writer := NewWriter(&output, []byte("WAVE"), 0)
+
+	err := writer.WriteChunk([]byte("data"), 3, func(w io.Writer) {
+		w.Write([]byte("abc"))
+	})
+	if err != nil {
+		t.Fatalf("WriteChunk failed: %v", err)
+	}
+
+	err = writer.WriteChunk([]byte("JUNK"), 1, func(w io.Writer) {
+		w.Write([]byte("x"))
+	})
+	if err != nil {
+		t.Fatalf("WriteChunk failed: %v", err)
+	}
+
+	got := output.Bytes()
+
+	// A 3-byte data chunk must be followed by a pad byte. The JUNK chunk
+	// verifies that the next chunk header starts after that pad byte.
+	want := []byte("RIFF")
+	want = append(want, 0, 0, 0, 0)
+	want = append(want, []byte("WAVE")...)
+	want = append(want, []byte("data")...)
+	want = append(want, 3, 0, 0, 0)
+	want = append(want, []byte("abc")...)
+	want = append(want, 0)
+	want = append(want, []byte("JUNK")...)
+	want = append(want, 1, 0, 0, 0)
+	want = append(want, 'x', 0)
+
+	if !bytes.Equal(got, want) {
+		t.Errorf("output = %v, want %v", got, want)
+	}
+}
 
 func TestWriteRIFF(t *testing.T) {
 	testFiles := []testFile{
